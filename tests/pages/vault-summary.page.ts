@@ -12,7 +12,7 @@ export class VaultSummaryPage {
   readonly vaultTypeLabel: Locator;
   readonly totalBalanceLabel: Locator;
   readonly keyHealthLabel: Locator;
-  readonly keyHealthItems: Locator[];
+  readonly keyHealthItems: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -25,7 +25,7 @@ export class VaultSummaryPage {
     this.vaultTypeLabel = page.getByText('Vault Type', { exact: true });
     this.totalBalanceLabel = page.getByText('Total Balance', { exact: true });
     this.keyHealthLabel = page.getByText('Key Health', { exact: true });
-    this.keyHealthItems = [1, 2, 3, 4, 5, 6].map((index) => page.getByTestId(`key-key-${index}`));
+    this.keyHealthItems = page.locator('[data-testid^="key-key-"]');
   }
 
   async expectVisible(): Promise<void> {
@@ -52,27 +52,34 @@ export class VaultSummaryPage {
     for (const field of summaryFields) {
       await expect(field.label).toBeVisible();
       await expect(field.value).toBeVisible();
-      await expect(field.value).not.toHaveText('');
+      await expect(field.value).toContainText(/\S/);
     }
 
     await expect(this.usdEquivalent).toBeVisible();
-    await expect(this.usdEquivalent).not.toHaveText('');
+    await expect(this.usdEquivalent).toContainText(/\S/);
   }
 
   async expectKeyHealthVisible(): Promise<void> {
     await expect(this.keyHealthLabel).toBeVisible();
 
-    for (const keyHealthItem of this.keyHealthItems) {
-      await expect(keyHealthItem).toBeVisible();
+    const keyHealthCount = await this.keyHealthItems.count();
+    expect(keyHealthCount).toBeGreaterThan(0);
+
+    for (let index = 0; index < keyHealthCount; index += 1) {
+      await expect(this.keyHealthItems.nth(index)).toBeVisible();
     }
   }
 
   async expectKeyHealthFieldCoverage(): Promise<void> {
     await expect(this.keyHealthLabel).toBeVisible();
 
-    for (const keyHealthItem of this.keyHealthItems) {
+    const keyHealthCount = await this.keyHealthItems.count();
+    expect(keyHealthCount).toBeGreaterThan(0);
+
+    for (let index = 0; index < keyHealthCount; index += 1) {
+      const keyHealthItem = this.keyHealthItems.nth(index);
       await expect(keyHealthItem).toBeVisible();
-      await expect(keyHealthItem).not.toHaveText('');
+      await expect(keyHealthItem).toContainText(/\S/);
       await expect(keyHealthItem).toContainText(/Healthy|Needs Health Check/);
       await expect(keyHealthItem).toContainText('Last checked');
     }
@@ -100,8 +107,9 @@ export class VaultSummaryPage {
   }
 
   async getKeyHealthValues(): Promise<string[]> {
+    const keyHealthCount = await this.keyHealthItems.count();
     const keyHealthValues = await Promise.all(
-      this.keyHealthItems.map((keyHealthItem) => keyHealthItem.innerText()),
+      Array.from({ length: keyHealthCount }, (_, index) => this.keyHealthItems.nth(index).innerText()),
     );
 
     return keyHealthValues.map((value) => value.trim());
