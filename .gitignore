@@ -1,2 +1,9 @@
 # Ignore node_modules directory
 node_modules/
+
+# Playwright related files and directoriess
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
