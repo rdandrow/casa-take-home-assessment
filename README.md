@@ -56,7 +56,30 @@ In your README, please include a short section describing:
 
 ## Tech Stack
 
+- **Runtime:** Node.js (LTS) + npm
+- **Language:** TypeScript
+- **Test Framework:** Playwright Test (`@playwright/test`)
+- **Typing Support:** `@types/node`
+
 ## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Install Playwright browser(s)
+npx playwright install
+
+# Run tests
+npx playwright test
+
+# Run tests in headed/UI modes (optional)
+npx playwright test --headed
+npx playwright test --ui
+
+# Open the HTML report (after test run)
+npx playwright show-report
+```
 
 ## Project Structure
 
