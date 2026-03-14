@@ -1,0 +1,23 @@
+{
+  "name": "casa-take-home-assessment",
+  "version": "1.0.0",
+  "description": "TypeScript-Playwright-Test-Assessment",
+  "homepage": "https://github.com/rdandrow/casa-take-home-assessment#readme",
+  "bugs": {
+    "url": "https://github.com/rdandrow/casa-take-home-assessment/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rdandrow/casa-take-home-assessment.git"
+  },
+  "license": "ISC",
+  "author": "Ryan Dandrow",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
