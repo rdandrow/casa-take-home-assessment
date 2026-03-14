@@ -4,8 +4,6 @@ import { ReceivingAddressesPage } from './../pages/receiving-addresses.page';
 import { TransactionHistoryPage } from './../pages/transaction-history.page';
 import { VaultSummaryPage } from './../pages/vault-summary.page';
 
-const DASHBOARD_URL = 'https://app-stg.keys.casa/qa_hire_q1_2026';
-
 // Known data counts derived from the scraped data-testid ranges on the staging dashboard.
 // These reflect the fixed test data present on the staging instance.
 const EXPECTED_TRANSACTION_COUNT = 8; // transaction-row-tx-1 through tx-8
@@ -17,8 +15,8 @@ test.describe('Vault Health Dashboard - Page Object Coverage', () => {
   test.describe.configure({ mode: 'serial' });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(DASHBOARD_URL, { waitUntil: 'domcontentloaded' });
-    await page.getByTestId('page').waitFor({ state: 'visible', timeout: 30000 });
+    await page.goto('/qa_hire_q1_2026', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('page')).toBeVisible({ timeout: 30000 });
   });
 
   // Validates Vault Summary field formats and all 6 Key Health entries.

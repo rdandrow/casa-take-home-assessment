@@ -4,12 +4,9 @@ import { ReceivingAddressesPage } from './../pages/receiving-addresses.page';
 import { TransactionHistoryPage } from './../pages/transaction-history.page';
 import { VaultSummaryPage } from './../pages/vault-summary.page';
 
-const DASHBOARD_URL = 'https://app-stg.keys.casa/qa_hire_q1_2026';
-
 // Known data counts derived from the scraped data-testid ranges on the staging dashboard.
 // These reflect the fixed test data present on the staging instance.
 const EXPECTED_TRANSACTION_COUNT = 8; // transaction-row-tx-1 through tx-8
-const EXPECTED_DEVICE_COUNT = 3;      // device-device-1 through device-3
 const EXPECTED_ADDRESS_COUNT = 4;     // address-row-0 through address-row-3
 
 // Minimum number of block confirmations required before a transaction may be considered final
@@ -30,8 +27,8 @@ test.describe('Vault Health Dashboard - Core Bug Scenarios', () => {
   test.describe.configure({ mode: 'serial' });
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(DASHBOARD_URL, { waitUntil: 'domcontentloaded' });
-    await page.getByTestId('page').waitFor({ state: 'visible', timeout: 30000 });
+    await page.goto('/qa_hire_q1_2026', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('page')).toBeVisible({ timeout: 30000 });
   });
 
   // Validates that every transaction displayed with a Confirmed status has reached the minimum
@@ -104,8 +101,7 @@ test.describe('Vault Health Dashboard - Core Bug Scenarios', () => {
       const addressTexts = await receivingAddressesPage.getAddressTexts();
       expect(addressTexts).toHaveLength(EXPECTED_ADDRESS_COUNT);
 
-      for (let index = 0; index < addressTexts.length; index += 1) {
-        const address = addressTexts[index];
+      for (const [index, address] of addressTexts.entries()) {
         // Each address must match a mainnet prefix (1, 3, or bc1).
         // Failure message includes the index and full address for immediate diagnosis.
         expect(
@@ -129,12 +125,12 @@ test.describe('Vault Health Dashboard - Core Bug Scenarios', () => {
     const vaultSummaryPage = new VaultSummaryPage(page);
     const transactionHistoryPage = new TransactionHistoryPage(page);
 
-    // Parse the displayed total balance as a numeric BTC value.
-    const totalBalanceBtc = await vaultSummaryPage.getTotalBalanceBtc();
-
-    // Collect the signed amount for every transaction row.
+    // Read the displayed balance and all transaction amounts in parallel — independent DOM reads.
     // Receives are positive (+), sends are negative (-).
-    const amounts = await transactionHistoryPage.getTransactionAmounts();
+    const [totalBalanceBtc, amounts] = await Promise.all([
+      vaultSummaryPage.getTotalBalanceBtc(),
+      transactionHistoryPage.getTransactionAmounts(),
+    ]);
     expect(amounts).toHaveLength(EXPECTED_TRANSACTION_COUNT);
 
     // Sum in satoshis (integer arithmetic) to eliminate floating point drift.
