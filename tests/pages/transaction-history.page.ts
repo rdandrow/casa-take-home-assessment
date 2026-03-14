@@ -8,7 +8,7 @@ type Transaction = {
   fee: string;
 };
 
-// Typed return shape for getExpandedTransactionDetailsById() — represents the expanded detail panel.
+// Typed return shape for getTransactionDetail() — represents the expanded detail panel.
 type TransactionDetail = {
   hash: string;
   address: string;
@@ -16,6 +16,13 @@ type TransactionDetail = {
   block: string;
   fee: string;
   raw: string;
+};
+
+// Typed return shape for getTransactionStatusData() — used for confirmation threshold validation.
+type TransactionStatusData = {
+  txId: string;
+  status: string;
+  confirmationCount: number;
 };
 
 /**
@@ -78,6 +85,24 @@ export class TransactionHistoryPage {
   // Normalizes tx ID input to accept both bare IDs ("1") and prefixed IDs ("tx-1").
   private normalizeTxId(txId: string): string {
     return txId.startsWith('tx-') ? txId : `tx-${txId}`;
+  }
+
+  // Parses the signed BTC amount from a transaction row's raw text.
+  // Expects a value like "+0.25000000" (receive) or "-0.12000000" (send).
+  // Throws if no signed numeric value is found, surfacing malformed row data early.
+  private parseAmount(rowText: string): number {
+    const match = rowText.match(/([+-]\d+\.\d+)/);
+    if (!match) throw new Error(`Could not parse amount from row text: ${rowText}`);
+    return parseFloat(match[1]);
+  }
+
+  // Parses the confirmation count from the raw confirmations text.
+  // Strips locale-formatted commas (e.g. "1,024" → 1024) before parsing to an integer.
+  // Returns 0 for empty or non-numeric values rather than throwing, since "0" is a valid state.
+  private parseConfirmationCount(text: string): number {
+    const stripped = text.replace(/,/g, '').trim();
+    const parsed = parseInt(stripped, 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
   }
 
   // Asserts the section card, heading, table, and sort controls are all visible.
@@ -312,5 +337,57 @@ export class TransactionHistoryPage {
     }
 
     return transactions;
+  }
+
+  // Returns the signed BTC amount for every transaction row, parsed from row text.
+  // Positive values are receives; negative values are sends.
+  // Works in satoshi-level integers internally to avoid floating point drift.
+  async getTransactionAmounts(): Promise<number[]> {
+    const rowTexts = await this.getTransactionRowsText();
+    return rowTexts.map((text) => this.parseAmount(text));
+  }
+
+  // Returns status and parsed numeric confirmation count for every transaction row.
+  // Used to assert confirmation threshold rules (e.g. minimum 20 confirmations for Confirmed status).
+  // txId is derived from the row's data-testid attribute for precise identification in failure messages.
+  async getTransactionStatusData(): Promise<TransactionStatusData[]> {
+    const rowCount = await this.transactionRows.count();
+
+    return Promise.all(
+      Array.from({ length: rowCount }, async (_, index) => {
+        const [txId, status, confirmationsText] = await Promise.all([
+          this.transactionRows.nth(index).getAttribute('data-testid'),
+          this.transactionStatuses.nth(index).innerText(),
+          this.transactionConfirmations.nth(index).innerText(),
+        ]);
+
+        return {
+          txId: txId ?? `row-${index}`,
+          status: status.trim(),
+          confirmationCount: this.parseConfirmationCount(confirmationsText),
+        };
+      }),
+    );
+  }
+
+  // Expands every transaction row in sequence and reads the full address from the detail panel.
+  // Returns an array of { txId, address } objects for network-type validation.
+  // Uses sequential expansion rather than parallel to avoid overlapping panel animations.
+  async getTransactionDetailAddresses(): Promise<Array<{ txId: string; address: string }>> {
+    const rowCount = await this.transactionRows.count();
+    const results: Array<{ txId: string; address: string }> = [];
+
+    for (let index = 0; index < rowCount; index += 1) {
+      const txId = await this.transactionRows.nth(index).getAttribute('data-testid') ?? `row-${index}`;
+      const txNum = txId.replace('transaction-row-', '');
+
+      await this.expandTransactionById(txNum);
+      const address = (await this.transactionDetailAddressById(txNum).innerText()).trim();
+      await this.collapseTransactionById(txNum);
+
+      results.push({ txId, address });
+    }
+
+    return results;
   }
 }

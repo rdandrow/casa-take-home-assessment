@@ -165,6 +165,16 @@ export class VaultSummaryPage {
     };
   }
 
+  // Returns the total balance as a parsed float in BTC.
+  // Parses from the rendered string (e.g. "1.84530000 BTC" → 1.8453).
+  // Throws if the value cannot be parsed, surfacing formatting regressions immediately.
+  async getTotalBalanceBtc(): Promise<number> {
+    const raw = await this.totalBalance.innerText();
+    const match = raw.trim().match(/([\d.]+)/);
+    if (!match) throw new Error(`Could not parse BTC value from total balance: ${raw}`);
+    return parseFloat(match[1]);
+  }
+
   // Returns the raw trimmed text of every key health row. Used as input to
   // getKeyHealthEntries() or for direct string assertions in tests.
   async getKeyHealthValues(): Promise<string[]> {
