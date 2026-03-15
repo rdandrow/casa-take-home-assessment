@@ -166,13 +166,33 @@ export class VaultSummaryPage {
   }
 
   // Returns the total balance as a parsed float in BTC.
-  // Parses from the rendered string (e.g. "1.84530000 BTC" → 1.8453).
-  // Throws if the value cannot be parsed, surfacing formatting regressions immediately.
+  // Supports either BTC (e.g. "1,234.56000000 BTC") or sats (e.g. "123,456 sats")
+  // and converts sats → BTC using 1 BTC = 100,000,000 sats.
+  // Throws on unknown/malformed formats so reconciliation tests fail loudly rather
+  // than silently computing with the wrong unit.
   async getTotalBalanceBtc(): Promise<number> {
     const raw = await this.totalBalance.innerText();
-    const match = raw.trim().match(/([\d.]+)/);
-    if (!match) throw new Error(`Could not parse BTC value from total balance: ${raw}`);
-    return parseFloat(match[1]);
+    const normalized = raw.trim().replace(/\s+/g, ' ');
+    const match = normalized.match(/^([\d,]+(?:\.\d+)?)\s*(BTC|sats?|satoshis?)$/i);
+
+    if (!match) {
+      throw new Error(
+        `Could not parse total balance with unit from: ${raw}. Expected formats like "1,234.56000000 BTC" or "123,456 sats".`,
+      );
+    }
+
+    const numericValue = Number.parseFloat(match[1].replace(/,/g, ''));
+    if (Number.isNaN(numericValue)) {
+      throw new Error(`Could not parse numeric total balance from: ${raw}`);
+    }
+
+    const unit = match[2].toLowerCase();
+    if (unit === 'btc') return numericValue;
+    if (unit === 'sat' || unit === 'sats' || unit === 'satoshi' || unit === 'satoshis') {
+      return numericValue / 1e8;
+    }
+
+    throw new Error(`Unsupported total balance unit in: ${raw}`);
   }
 
   // Returns the raw trimmed text of every key health row. Used as input to
