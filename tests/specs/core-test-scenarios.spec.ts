@@ -341,7 +341,7 @@ test.describe('Vault Health Dashboard - Core Bug Scenarios', () => {
         `Could not parse a key count from vault type label: '${vaultType}'. Expected format: 'M-of-N Multisig'.`,
       ).not.toBeNull();
 
-      const expectedKeyCount = parseInt(match![1], 10);
+      const expectedKeyCount = parseInt(match![1]!, 10);
       const actualKeyCount = keyHealthEntries.length;
 
       // The number of keys in Key Health must equal the N in 'M-of-N'.
@@ -387,7 +387,7 @@ test.describe('Vault Health Dashboard - Core Bug Scenarios', () => {
         `Could not parse a device count from vault type label: '${vaultType}'. Expected format: 'M-of-N Multisig'.`,
       ).not.toBeNull();
 
-      const expectedDeviceCount = parseInt(match![1], 10);
+      const expectedDeviceCount = parseInt(match![1]!, 10);
       const actualDeviceCount = devices.length;
 
       // The number of connected devices must equal the N in 'M-of-N'.

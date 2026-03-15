@@ -94,7 +94,7 @@ export class TransactionHistoryPage {
   private parseAmount(rowText: string): number {
     const match = rowText.match(/([+-]\d+\.\d+)/);
     if (!match) throw new Error(`Could not parse amount from row text: ${rowText}`);
-    return parseFloat(match[1]);
+    return parseFloat(match[1]!);
   }
 
   // Parses the confirmation count from the raw confirmations text.

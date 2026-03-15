@@ -181,12 +181,12 @@ export class VaultSummaryPage {
       );
     }
 
-    const numericValue = Number.parseFloat(match[1].replace(/,/g, ''));
+    const numericValue = Number.parseFloat(match[1]!.replace(/,/g, ''));
     if (Number.isNaN(numericValue)) {
       throw new Error(`Could not parse numeric total balance from: ${raw}`);
     }
 
-    const unit = match[2].toLowerCase();
+    const unit = match[2]!.toLowerCase();
     if (unit === 'btc') return numericValue;
     if (unit === 'sat' || unit === 'sats' || unit === 'satoshi' || unit === 'satoshis') {
       return numericValue / 1e8;
@@ -228,9 +228,9 @@ export class VaultSummaryPage {
       }
 
       return {
-        keyName: match[1].trim(),
-        healthStatus: match[2].trim(),
-        lastChecked: match[3].trim(),
+        keyName: match[1]!.trim(),
+        healthStatus: match[2]!.trim(),
+        lastChecked: match[3]!.trim(),
         raw: normalized,
       };
     });
