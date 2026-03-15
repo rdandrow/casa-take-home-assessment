@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { VaultSummaryPage } from './../pages/vault-summary.page';
+import { VaultSummaryPage } from '../pages/vault-summary.page';
 
 // Lightweight fixture helper for parser-focused tests.
 // Renders only the minimum DOM required by VaultSummaryPage: a vault-summary card
