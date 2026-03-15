@@ -118,24 +118,26 @@ If a value is missing or not a valid integer, tests fall back to the defaults ab
 ```
 casa-take-home-assessment/
 ├── tests/
-│   ├── pages/                                  # Page Object Model classes
-│   │   ├── vault-summary.page.ts               # Vault Summary card + Key Health section
-│   │   ├── transaction-history.page.ts         # Transaction History card + expanded detail panels
-│   │   ├── connected-devices.page.ts           # Connected Devices section
-│   │   └── receiving-addresses.page.ts         # Receiving Addresses section
-│   └── specs/                                  # Test suites
-│       ├── dashboard-components.spec.ts        # Baseline coverage — page object helpers + field formats
-│       └── core-test-scenarios.spec.ts         # Bug documentation — test.fail() tests for known defects
-├── playwright.config.ts                        # Playwright configuration (baseURL, projects, reporters)
+│   ├── pages/                                   # Page Object Model classes
+│   │   ├── vault-summary.page.ts                # Vault Summary card + Key Health section
+│   │   ├── transaction-history.page.ts          # Transaction History card + expanded detail panels
+│   │   ├── connected-devices.page.ts            # Connected Devices section
+│   │   └── receiving-addresses.page.ts          # Receiving Addresses section
+│   └── specs/                                   # Test suites
+│       ├── dashboard-components.spec.ts         # Baseline coverage — page object helpers + field formats
+│       ├── core-test-scenarios.spec.ts          # Bug documentation — test.fail() tests for known defects
+│       └── vault-summary-balance-parser.spec.ts # Unit-like parser tests — getTotalBalanceBtc() edge cases
+├── playwright.config.ts                         # Playwright configuration (baseURL, projects, reporters)
 ├── package.json
 └── README.md
 ```
 
 Each page object in `tests/pages/` maps to one section of the dashboard. It owns all locators, assertion helpers, and data-extraction helpers for that section. Tests in `tests/specs/` compose these objects without touching selectors directly.
 
-The two spec files are intentionally separated by purpose:
+The three spec files are intentionally separated by purpose:
 - **`dashboard-components.spec.ts`** contains 4 passing `test()` tests that exercise every page object method and assert field formats. These run green on any healthy build.
 - **`core-test-scenarios.spec.ts`** contains 9 `test.fail()` tests that document confirmed bugs found during exploratory testing. Each asserts the expected (correct) behavior; the assertion deliberately fails against the current staging data, which `test.fail()` converts to a suite-level pass. If a bug is fixed and a test unexpectedly passes, Playwright flags it.
+- **`vault-summary-balance-parser.spec.ts`** contains 4 deterministic unit-like tests for the `getTotalBalanceBtc()` parser. These use an in-memory DOM fixture (`page.setContent`) with no network dependency. These tests cover comma-formatted BTC values, sats-to-BTC conversion, and fail-loud behavior for unsupported or missing units.
 
 ## Architecture & Best Practices
 
@@ -317,10 +319,11 @@ Not every pattern in this suite comes directly from the Playwright playbook. Som
 
 ## Test Prioritization
 
-The suite is split into two specs by intent:
+The suite is split into three specs by intent:
 
 - **`dashboard-components.spec.ts`:** Baseline component-level coverage. Exercises every page object helper and validates field formats. These run green on any healthy build and are the first signal that a section has regressed.
 - **`core-test-scenarios.spec.ts`:** Bug documentation. Each `test.fail()` asserts the correct expected behavior against a confirmed staging defect. The suite stays green while maintaining a living record of open issues.
+- **`vault-summary-balance-parser.spec.ts`:** Focused parser coverage for `getTotalBalanceBtc()`. These tests are deterministic and network-free, and run instantly and are the first signal that a numeric parsing regression has been introduced to the page object layer.
 
 
 ## Bug Documentation
