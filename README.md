@@ -77,6 +77,12 @@ cp .env.example .env
 # Run tests
 npx playwright test
 
+# Run baseline coverage only (green-path + parser tests)
+npm run test:baseline
+
+# Run bug documentation tests only (test.fail scenarios)
+npm run test:bugs
+
 # Run tests in headed/UI modes (optional)
 npx playwright test --headed
 npx playwright test --ui
@@ -84,6 +90,28 @@ npx playwright test --ui
 # Open the HTML report (after test run)
 npx playwright show-report
 ```
+
+## CI
+
+[![Playwright Matrix](https://github.com/rdandrow/casa-take-home-assessment/actions/workflows/playwright-matrix.yml/badge.svg)](https://github.com/rdandrow/casa-take-home-assessment/actions/workflows/playwright-matrix.yml)
+
+GitHub Actions runs a matrix workflow with two independent jobs:
+- **Baseline** (`npm run test:baseline -- --project=chromium --reporter=line`)
+- **Bug Docs** (`npm run test:bugs -- --project=chromium --reporter=line`)
+
+Triggers:
+- Pull requests
+- Pushes to `main`
+- Manual runs via **Actions → Playwright Matrix → Run workflow** (`workflow_dispatch`)
+
+### CI Troubleshooting
+
+- The staging dashboard can occasionally load slowly; a one-off `beforeEach` timeout may be transient.
+- If only one matrix job fails with a page-load timeout, rerun that failed job once before investigating code changes.
+- Check uploaded artifacts (`playwright-report/` and `test-results/`) from the failed run for error context.
+- Reproduce locally with the matching command:
+    - Baseline: `npm run test:baseline -- --project=chromium --reporter=line`
+    - Bug Docs: `npm run test:bugs -- --project=chromium --reporter=line`
 
 ## Environment Variables
 

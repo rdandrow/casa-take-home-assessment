@@ -14,7 +14,14 @@
   "author": "Ryan Dandrow",
   "type": "commonjs",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "playwright test",
+    "test:baseline": "playwright test tests/specs/dashboard-components.spec.ts tests/specs/vault-summary-balance-parser.spec.ts",
+    "test:bugs": "playwright test tests/specs/core-test-scenarios.spec.ts",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
+  },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/node": "^25.5.0",

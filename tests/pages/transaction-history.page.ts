@@ -1,4 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
+import { normalizePrefixedId } from '../utils/normalize';
 
 // Typed return shape for getTransactions() — represents a single transaction row's fields.
 type Transaction = {
@@ -84,7 +85,7 @@ export class TransactionHistoryPage {
 
   // Normalizes tx ID input to accept both bare IDs ("1") and prefixed IDs ("tx-1").
   private normalizeTxId(txId: string): string {
-    return txId.startsWith('tx-') ? txId : `tx-${txId}`;
+    return normalizePrefixedId(txId, 'tx', 'transaction id');
   }
 
   // Parses the signed BTC amount from a transaction row's raw text.

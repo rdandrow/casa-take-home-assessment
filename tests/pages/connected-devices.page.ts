@@ -1,4 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
+import { normalizePrefixedId } from '../utils/normalize';
 
 // Typed union of all valid device connection/health statuses.
 // Tests will throw if an unexpected status is encountered, surfacing app regressions early.
@@ -82,7 +83,7 @@ export class ConnectedDevicesPage {
 
   // Normalizes device ID input to accept both bare IDs ("1") and prefixed ("device-1").
   private normalizeDeviceId(deviceId: string): string {
-    return deviceId.startsWith('device-') ? deviceId : `device-${deviceId}`;
+    return normalizePrefixedId(deviceId, 'device', 'device id');
   }
 
   // Returns the full device row locator for a specific device. Scoped to card.

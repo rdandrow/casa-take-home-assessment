@@ -1,4 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
+import { normalizeNumericIndex } from '../utils/normalize';
 
 // Typed return shape for getAddresses() — represents a single receiving address entry.
 type ReceivingAddress = {
@@ -54,13 +55,7 @@ export class ReceivingAddressesPage {
   // Validates that the index is a non-negative integer string before constructing a test ID.
   // Throws immediately on invalid input so test failures surface at the call site.
   private normalizeIndex(index: number | string): string {
-    const normalized = String(index).trim();
-
-    if (!/^\d+$/.test(normalized)) {
-      throw new Error(`Invalid receiving address index: ${index}`);
-    }
-
-    return normalized;
+    return normalizeNumericIndex(index, 'receiving address index');
   }
 
   // Returns the full address row locator for the given index. Scoped to card.
