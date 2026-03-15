@@ -7,3 +7,9 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Environment variable files (keep template committed)
+.env
+.env.local
+.env.*.local
+!.env.example

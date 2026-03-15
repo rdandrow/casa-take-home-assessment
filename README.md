@@ -70,6 +70,10 @@ npm install
 # Install Playwright browser(s)
 npx playwright install
 
+# Configure test target URL (optional)
+cp .env.example .env
+# then edit .env and set PLAYWRIGHT_BASE_URL to your environment
+
 # Run tests
 npx playwright test
 
