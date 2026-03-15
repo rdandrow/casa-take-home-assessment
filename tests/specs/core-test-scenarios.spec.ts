@@ -4,14 +4,22 @@ import { ReceivingAddressesPage } from './../pages/receiving-addresses.page';
 import { TransactionHistoryPage } from './../pages/transaction-history.page';
 import { VaultSummaryPage } from './../pages/vault-summary.page';
 
-// Known data counts derived from the scraped data-testid ranges on the staging dashboard.
-// These reflect the fixed test data present on the staging instance.
-const EXPECTED_TRANSACTION_COUNT = 8; // transaction-row-tx-1 through tx-8
-const EXPECTED_ADDRESS_COUNT = 4;     // address-row-0 through address-row-3
+const getEnvInt = (name: string, fallback: number): number => {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+// Expected data counts are environment-configurable so the same tests can run against
+// different seeded datasets without requiring code changes.
+const EXPECTED_TRANSACTION_COUNT = getEnvInt('EXPECTED_TRANSACTION_COUNT', 8);
+const EXPECTED_ADDRESS_COUNT = getEnvInt('EXPECTED_ADDRESS_COUNT', 4);
 
 // Minimum number of block confirmations required before a transaction may be considered final
 // and displayed with a Confirmed status. Industry standard is 6; Casa requires 20.
-const MIN_CONFIRMATIONS_FOR_CONFIRMED = 20;
+const MIN_CONFIRMATIONS_FOR_CONFIRMED = getEnvInt('MIN_CONFIRMATIONS_FOR_CONFIRMED', 20);
 
 // Regex that matches only Bitcoin mainnet address prefixes.
 // Mainnet: P2PKH (1...), P2SH (3...), native SegWit (bc1q/bc1p).

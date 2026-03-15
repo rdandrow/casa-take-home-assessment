@@ -4,12 +4,20 @@ import { ReceivingAddressesPage } from './../pages/receiving-addresses.page';
 import { TransactionHistoryPage } from './../pages/transaction-history.page';
 import { VaultSummaryPage } from './../pages/vault-summary.page';
 
-// Known data counts derived from the scraped data-testid ranges on the staging dashboard.
-// These reflect the fixed test data present on the staging instance.
-const EXPECTED_TRANSACTION_COUNT = 8; // transaction-row-tx-1 through tx-8
-const EXPECTED_DEVICE_COUNT = 3;      // device-device-1 through device-3
-const EXPECTED_ADDRESS_COUNT = 4;     // address-row-0 through address-row-3
-const EXPECTED_KEY_COUNT = 6;         // key-key-1 through key-key-6
+const getEnvInt = (name: string, fallback: number): number => {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+// Expected data counts are environment-configurable so the same tests can run against
+// different seeded datasets without requiring code changes.
+const EXPECTED_TRANSACTION_COUNT = getEnvInt('EXPECTED_TRANSACTION_COUNT', 8);
+const EXPECTED_DEVICE_COUNT = getEnvInt('EXPECTED_DEVICE_COUNT', 3);
+const EXPECTED_ADDRESS_COUNT = getEnvInt('EXPECTED_ADDRESS_COUNT', 4);
+const EXPECTED_KEY_COUNT = getEnvInt('EXPECTED_KEY_COUNT', 6);
 
 test.describe('Vault Health Dashboard - Page Object Coverage', () => {
   test.describe.configure({ mode: 'serial' });

@@ -85,6 +85,34 @@ npx playwright test --ui
 npx playwright show-report
 ```
 
+## Environment Variables
+
+Tests can be retargeted and dataset expectations can be tuned without code changes by setting env vars in `.env` (local) or CI environment settings.
+
+### URL Targeting
+
+- `PLAYWRIGHT_BASE_URL` — Primary app host used by Playwright `baseURL`.
+- `BASE_URL` — Secondary fallback.
+
+Precedence for `baseURL` in `playwright.config.ts`:
+1. `PLAYWRIGHT_BASE_URL`
+2. `BASE_URL`
+3. `https://app-stg.keys.casa` (default fallback)
+
+> Note: tests call `page.goto('/qa_hire_q1_2026')`, so `PLAYWRIGHT_BASE_URL` should typically be host-only (for example `https://app-stg.keys.casa`), not the full path.
+
+### Dataset Expectations
+
+Used by spec assertions that validate known dataset counts and thresholds:
+
+- `EXPECTED_TRANSACTION_COUNT` (default: `8`)
+- `EXPECTED_DEVICE_COUNT` (default: `3`)
+- `EXPECTED_ADDRESS_COUNT` (default: `4`)
+- `EXPECTED_KEY_COUNT` (default: `6`)
+- `MIN_CONFIRMATIONS_FOR_CONFIRMED` (default: `20`)
+
+If a value is missing or not a valid integer, tests fall back to the defaults above.
+
 ## Project Structure
 
 ```
