@@ -57,7 +57,7 @@ In your README, please include a short section describing:
 ## Tech Stack
 
 - **Runtime:** Node.js (LTS) + npm
-- **Language:** TypeScript
+- **Language:** TypeScript (strict mode — see `tsconfig.json`)
 - **Test Framework:** Playwright Test (`@playwright/test`)
 - **Typing Support:** `@types/node`
 
@@ -89,6 +89,9 @@ npx playwright test --ui
 
 # Open the HTML report (after test run)
 npx playwright show-report
+
+# Type-check all test files without emitting output
+npx tsc --noEmit
 ```
 
 ## CI
@@ -156,6 +159,7 @@ casa-take-home-assessment/
 │       ├── core-test-scenarios.spec.ts          # Bug documentation — test.fail() tests for known defects
 │       └── vault-summary-balance-parser.spec.ts # Unit-like parser tests — getTotalBalanceBtc() edge cases
 ├── playwright.config.ts                         # Playwright configuration (baseURL, projects, reporters)
+├── tsconfig.json                                # TypeScript compiler config (strict mode, noEmit)
 ├── package.json
 └── README.md
 ```
@@ -258,6 +262,14 @@ async getTransactions(): Promise<Transaction[]> { ... }
 ```
 
 Named types make method signatures self-documenting, enable IDE autocompletion on returned values, and make it obvious when a field is missing or the structure has changed.
+
+---
+
+### TypeScript Strict Mode
+
+The project uses `strict: true` in `tsconfig.json`, which enables the full set of TypeScript strictness checks — including `noUncheckedIndexedAccess`, `strictNullChecks`, and `noImplicitAny`. `noEmit: true` means the compiler is used for type-checking only; Playwright's own transpilation handles test execution.
+
+All regex capture group accesses use non-null assertions (`match[1]!`) rather than optional chaining (`match[1]?.trim()`) after an explicit `match !== null` guard. This is intentional: if the guard passes, the assertion is always safe, and using `?` would produce an empty string that would silently pass a numeric `parseFloat`/`parseInt` call instead of surfacing a real parsing failure.
 
 ---
 
