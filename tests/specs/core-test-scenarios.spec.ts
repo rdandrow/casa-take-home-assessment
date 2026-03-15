@@ -2,15 +2,8 @@ import { expect, test } from '@playwright/test';
 import { ConnectedDevicesPage } from './../pages/connected-devices.page';
 import { ReceivingAddressesPage } from './../pages/receiving-addresses.page';
 import { TransactionHistoryPage } from './../pages/transaction-history.page';
+import { getEnvInt } from './../utils/env';
 import { VaultSummaryPage } from './../pages/vault-summary.page';
-
-const getEnvInt = (name: string, fallback: number): number => {
-  const raw = process.env[name];
-  if (!raw) return fallback;
-
-  const parsed = Number.parseInt(raw, 10);
-  return Number.isFinite(parsed) ? parsed : fallback;
-};
 
 // Expected data counts are environment-configurable so the same tests can run against
 // different seeded datasets without requiring code changes.

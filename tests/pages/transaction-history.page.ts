@@ -341,7 +341,8 @@ export class TransactionHistoryPage {
 
   // Returns the signed BTC amount for every transaction row, parsed from row text.
   // Positive values are receives; negative values are sends.
-  // Works in satoshi-level integers internally to avoid floating point drift.
+  // Returns decimal BTC numbers; callers that need exact arithmetic should convert
+  // to satoshis (integer math) before aggregating.
   async getTransactionAmounts(): Promise<number[]> {
     const rowTexts = await this.getTransactionRowsText();
     return rowTexts.map((text) => this.parseAmount(text));
