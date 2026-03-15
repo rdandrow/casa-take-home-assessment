@@ -85,10 +85,21 @@ test.describe('Vault Health Dashboard - Page Object Coverage', () => {
     // Reset sort order before continuing.
     await transactionHistoryPage.sortToggle.click();
 
-    // expectExpandedCoverageById handles expand internally — no separate expand call needed.
-    await transactionHistoryPage.expectExpandedCoverageById('1');
+    // Derive the first transaction ID from the DOM to avoid hardcoding tx identifiers.
+    // data-testid format: "transaction-row-tx-<id>" — strip "transaction-row-tx-".
+    const firstTransactionTestId = await transactionHistoryPage
+      .transactionRows
+      .first()
+      .getAttribute('data-testid');
+    expect(firstTransactionTestId).toMatch(/^transaction-row-tx-.+$/);
+    const firstTransactionId = (firstTransactionTestId ?? '').replace(/^transaction-row-tx-/, '');
 
-    const expandedDetails = await transactionHistoryPage.getExpandedTransactionDetailsById('1');
+    // expectExpandedCoverageById handles expand internally — no separate expand call needed.
+    await transactionHistoryPage.expectExpandedCoverageById(firstTransactionId);
+
+    const expandedDetails = await transactionHistoryPage.getExpandedTransactionDetailsById(
+      firstTransactionId,
+    );
     // Transaction hash should be a hex string of at least 8 characters.
     expect(expandedDetails.hash).toMatch(/[a-f0-9]{8,}/i);
     // Address in the detail panel should be a valid Bitcoin address format.
@@ -99,12 +110,12 @@ test.describe('Vault Health Dashboard - Page Object Coverage', () => {
     // Fee in the detail panel should contain a numeric value.
     expect(expandedDetails.fee).toMatch(/[\d,.]+/);
 
-    await transactionHistoryPage.collapseTransactionById('1');
+    await transactionHistoryPage.collapseTransactionById(firstTransactionId);
     // Confirm the detail panel is no longer visible after collapse.
-    await expect(transactionHistoryPage.transactionDetailById('1')).not.toBeVisible();
+    await expect(transactionHistoryPage.transactionDetailById(firstTransactionId)).not.toBeVisible();
   });
 
-  // Validates Connected Devices field coverage, status values, and all 3 device IDs.
+  // Validates Connected Devices field coverage, status values, and all rendered device IDs.
   // Asserts: exact device count, status is within the known valid set, all per-device locators resolve.
   test('covers Connected Devices page object helpers', async ({ page }) => {
     const connectedDevicesPage = new ConnectedDevicesPage(page);
@@ -123,15 +134,22 @@ test.describe('Vault Health Dashboard - Page Object Coverage', () => {
       expect(device.firmware).toBeTruthy();
     }
 
-    // Verify all three device rows are individually addressable by ID.
-    for (const id of ['1', '2', '3']) {
-      await expect(connectedDevicesPage.deviceRowById(id)).toBeVisible();
-      await expect(connectedDevicesPage.deviceStatusDotById(id)).toBeVisible();
-      await expect(connectedDevicesPage.deviceStatusTextById(id)).toBeVisible();
+    // Derive IDs from the DOM rather than hardcoding them, so this loop stays valid
+    // if EXPECTED_DEVICE_COUNT changes or device IDs are non-contiguous.
+    // data-testid format: "device-device-<id>" — strip the "device-device-" prefix to get the bare ID.
+    const deviceRowCount = await connectedDevicesPage.deviceRows.count();
+    for (let index = 0; index < deviceRowCount; index += 1) {
+      const row = connectedDevicesPage.deviceRows.nth(index);
+      const testId = await row.getAttribute('data-testid');
+      expect(testId).toMatch(/^device-device-.+$/);
+      const deviceId = (testId ?? '').replace(/^device-device-/, '');
+      await expect(connectedDevicesPage.deviceRowById(deviceId)).toBeVisible();
+      await expect(connectedDevicesPage.deviceStatusDotById(deviceId)).toBeVisible();
+      await expect(connectedDevicesPage.deviceStatusTextById(deviceId)).toBeVisible();
     }
   });
 
-  // Validates Receiving Addresses row count, all 4 per-index locators, and action interactions.
+  // Validates Receiving Addresses row count, all rendered per-index locators, and action interactions.
   // expectFieldCoverage already validates Bitcoin address format for every row.
   test('covers Receiving Addresses page object helpers', async ({ page }) => {
     const receivingAddressesPage = new ReceivingAddressesPage(page);
@@ -144,17 +162,24 @@ test.describe('Vault Health Dashboard - Page Object Coverage', () => {
     // Assert the exact count matches the known number of addresses on the staging instance.
     expect(addresses).toHaveLength(EXPECTED_ADDRESS_COUNT);
 
-    // Verify all 4 address rows are individually addressable by index.
-    for (const index of [0, 1, 2, 3]) {
+    // Verify every rendered address row is individually addressable by index.
+    const addressRowCount = await receivingAddressesPage.addressRows.count();
+    for (let index = 0; index < addressRowCount; index += 1) {
       await expect(receivingAddressesPage.addressRowByIndex(index)).toBeVisible();
       await expect(receivingAddressesPage.addressTextByIndex(index)).toBeVisible();
       await expect(receivingAddressesPage.copyAddressButtonByIndex(index)).toBeEnabled();
       await expect(receivingAddressesPage.receiveAddressButtonByIndex(index)).toBeEnabled();
     }
 
-    // Exercise copy and receive interactions on the first address.
-    await receivingAddressesPage.copyAddressByIndex(0);
-    await receivingAddressesPage.clickReceiveByIndex(0);
+    // Exercise copy and receive interactions on the first rendered address row.
+    const firstAddressRowTestId = await receivingAddressesPage
+      .addressRows
+      .first()
+      .getAttribute('data-testid');
+    expect(firstAddressRowTestId).toMatch(/^address-row-\d+$/);
+    const firstAddressIndex = (firstAddressRowTestId ?? '').replace(/^address-row-/, '');
+    await receivingAddressesPage.copyAddressByIndex(firstAddressIndex);
+    await receivingAddressesPage.clickReceiveByIndex(firstAddressIndex);
   });
 });
 
