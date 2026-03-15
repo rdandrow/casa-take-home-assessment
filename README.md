@@ -332,7 +332,7 @@ Nine bugs were identified through manual exploratory testing. Each is documented
 
 ### Most Critical UX Bug
 
-From my perspective, the fact that `mainnet` and `testnet` addresses are mixed throughout the page together is a critical level bug. This occurs within both the `Transaction History` table and the `Receiving Addresses` components in the applicaiton under test.
+From my perspective, the fact that `mainnet` and `testnet` addresses are mixed throughout the page together is a critical level bug. This occurs within both the `Transaction History` table and the `Receiving Addresses` components in the application under test.
 
 **Steps to reproduce**
 1. Navigate to the `Vault Health Dashboard` page.
@@ -367,11 +367,11 @@ The first transaction in the `Transaction History` table displays a `Confirmed` 
 
 **Expected vs. actual behavior**
 - **Actual:** The observed transaction shows `Confirmed` with 0 confirmations, bypassing the system's on-chain state management.
-- **Expected:** A observed transaction must not transition to `Confirmed` until it has received the minimum required block confirmations (20 as a normal baseline). The correct state sequence should be something similar to the following: `Pending` → `Broadcasted` → `Confirmed`.
+- **Expected:** An observed transaction must not transition to `Confirmed` until it has received the minimum required block confirmations (20 as a normal baseline). The correct state sequence should be something similar to the following: `Pending` → `Broadcasted` → `Confirmed`.
 
 **Why it is the most critical functional bug**
 
-Confirmation status is not a cosmetic label, it's the mechanism by which the application communicates whether a Bitcoin or any other type of blockcahin-based transaction is considered final. If the `Confirmed` badge is set independently of the actual on-chain confirmation count within the block explorer, the status system is unreliable for every transaction, not just this one. A user who treats a falsely `Confirmed` transaction as settled may release goods or consider a it final prior to the transaction being irreversible on-chain.  This scenario could also lead to Double Spending and or 0-Conf Vulnerabilities.
+Confirmation status is not a cosmetic label, it's the mechanism by which the application communicates whether a Bitcoin or any other type of blockchain-based transaction is considered final. If the `Confirmed` badge is set independently of the actual on-chain confirmation count within the block explorer, the status system is unreliable for every transaction, not just this one. A user who treats a falsely `Confirmed` transaction as settled may release goods or consider a it final prior to the transaction being irreversible on-chain.  This scenario could also lead to Double Spending and or 0-Conf Vulnerabilities.
 
 ## AI Tooling
 
